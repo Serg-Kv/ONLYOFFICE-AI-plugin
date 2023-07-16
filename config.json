@@ -1,0 +1,60 @@
+{
+    "name"       : "AI Plugin",
+    "guid"       : "asc.{4e079756-cdbc-48ff-bed4-c6f8d947482f}",
+    "baseUrl"    : "",
+    "variations" : [
+        {
+            "description"         : "AI Plugin",
+            "url"                 : "index.html",
+            "icons"               : ["resources/icon.png", "resources/icon.png"],
+            "isViewer"            : true,
+            "EditorsSupport"      : ["word"],
+            "isVisual"            : true,
+            "isModal"             : true,
+            "isInsideMode"        : true,
+            "initDataType"        : "none",
+            "initData"            : "",
+            "isUpdateOleOnResize" : true,
+            "buttons"             : []
+        },
+        {
+            "description": "设置",
+            "url": "index_setting.html",
+            "isViewer": false,
+            "EditorsSupport": ["word"],
+            "isVisual": true,
+            "isModal": true,
+            "isInsideMode": false,
+            "initDataType": "none",
+            "initData": "",
+            "isUpdateOleOnResize": true,
+            "buttons": [
+                {
+                    "text": "Ok",
+                    "primary": true
+                }
+            ],
+
+            "size" : [392, 147]
+        },
+
+        {
+            "description": "自定义提示",
+            "url": "add_command.html",
+            "isViewer": false,
+            "EditorsSupport": ["word"],
+            "isVisual": true,
+            "isModal": true,
+            "isInsideMode": false,
+            "initDataType": "none",
+            "initData": "",
+            "isUpdateOleOnResize": true,
+            "buttons": [
+                {
+                    "text": "Ok",
+                    "primary": true
+                }
+            ]
+        }
+    ]
+}
