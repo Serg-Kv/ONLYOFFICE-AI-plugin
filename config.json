@@ -15,7 +15,8 @@
             "initDataType"        : "none",
             "initData"            : "",
             "isUpdateOleOnResize" : true,
-            "buttons"             : []
+            "buttons"             : [],
+            "events": ["onContextMenuShow", "onContextMenuClick"]
         },
         {
             "description": "设置",

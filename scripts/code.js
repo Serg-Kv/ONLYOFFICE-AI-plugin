@@ -1,18 +1,91 @@
 // an Chat plugin of AI
 (function(window, undefined)
 {
-    let isInit = false;
+    let ApiKey = '';
+    let hasKey = false;
+    const model = 'standard';
+    const maxLen = 4000;
 
-    window.Asc.plugin.init = function(text)
-	{
-		isInit = true;
-        //...
-	};
+    function checkApiKey() {
+        ApiKey = localStorage.getItem('apikey');
+        if (ApiKey) {
+            hasKey = true;
+        } else {
+            hasKey = false;
+        }
+    };
 
+    
+    window.Asc.plugin.init = function(text){ };
+    
 	window.Asc.plugin.button = function()
 	{
-		this.executeCommand("close", "");
+        this.executeCommand("close", "");
 	};
+    
+    function getContextMenuItems() {
+        let settings = {
+            guid: window.Asc.plugin.guid,
+            items: [
+                {
+                    id: 'AiProcess',
+                    text: 'AI处理',
+                    items : [
+                        {
+                            id : 'summarize',
+                            text: '总结',
+                        },
+                        {
+                            id: 'explain',
+                            text: '解释',
+                        },
+                        {
+                            id: 'translate',
+                            text: '翻译',
+                            items : [
+                                {
+                                    id : 'translate_en',
+                                    text: '英译中',
+                                },
+                                {
+                                    id : 'translate_zh',
+                                    text: '中译英',
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        return settings;
+    }
+    
+    window.Asc.plugin.attachEvent('onContextMenuShow', function(options) {
+        if (!options) return;
+    
+        if (options.type === 'Selection' || options.type === 'Target')
+            this.executeMethod('AddContextMenuItem', [getContextMenuItems()]);
+    });
+
+    // 总结
+    window.Asc.plugin.attachContextMenuClickEvent('summarize', function() {
+        window.Asc.plugin.executeMethod('GetSelectedText', null, function(text) {
+            console.log("总结选中的文本：", text);
+            let response = window.Asc.plugin.generateResponse('总结：' + text);
+            response.then(function(res) {
+                console.log("获得回复：", res);
+                Asc.scope.text = res; // export variable to plugin scope
+                window.Asc.plugin.callCommand(function() {
+                    var oDocument = Api.GetDocument();
+                    var oParagraph = Api.CreateParagraph();
+                    oParagraph.AddText(Asc.scope.text); // or oParagraph.AddText(scope.text);
+                    oDocument.InsertContent([oParagraph]);
+                }, false);
+
+            });
+        }); 
+    });
+
 
     // add a new function for generating AI responses
     window.Asc.plugin.generateResponse = async function(message) {
