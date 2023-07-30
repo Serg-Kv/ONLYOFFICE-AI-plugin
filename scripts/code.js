@@ -16,7 +16,7 @@
     };
 
     
-    window.Asc.plugin.init = function(text){ };
+    window.Asc.plugin.init = function(){ };
     
 	window.Asc.plugin.button = function()
 	{
@@ -31,6 +31,10 @@
                     id: 'AiProcess',
                     text: 'AI处理',
                     items : [
+                        {
+                            id : 'generate',
+                            text: '生成',
+                        },
                         {
                             id : 'summarize',
                             text: '总结',
@@ -69,21 +73,31 @@
 
     // 总结
     window.Asc.plugin.attachContextMenuClickEvent('summarize', function() {
+        // todo
+        
+    });
+
+    // 生成
+    window.Asc.plugin.attachContextMenuClickEvent('generate', function() {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function(text) {
-            console.log("总结选中的文本：", text);
-            let response = window.Asc.plugin.generateResponse('总结：' + text);
+            console.log("生成选中的文本：", text);
+            let response = window.Asc.plugin.generateResponse(text);
             response.then(function(res) {
                 console.log("获得回复：", res);
-                Asc.scope.text = res; // export variable to plugin scope
-                window.Asc.plugin.callCommand(function() {
-                    var oDocument = Api.GetDocument();
-                    var oParagraph = Api.CreateParagraph();
-                    oParagraph.AddText(Asc.scope.text); // or oParagraph.AddText(scope.text);
-                    oDocument.InsertContent([oParagraph]);
-                }, false);
-
+                Asc.scope.paragraphs = res.slice(1, -1).split('\\n\\n'); // export variable to plugin scope
+                console.log("paragraphs: ", Asc.scope.paragraphs);
+                Asc.scope.st = Asc.scope.paragraphs;
+                        Asc.plugin.callCommand(function() {
+                            var oDocument = Api.GetDocument();
+                            for (var i = 0; i < Asc.scope.st.length; i++)
+                            {
+                                var oParagraph = Api.CreateParagraph();
+                                oParagraph.AddText(Asc.scope.st[i]);
+                                oDocument.InsertContent([oParagraph]);
+                            }
+                        }, false);
             });
-        }); 
+        });
     });
 
 
