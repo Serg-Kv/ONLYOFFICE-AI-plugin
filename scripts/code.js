@@ -85,22 +85,33 @@
         clearHistory();
     });    
     
-    // 在对话框中显示消息
     const displayMessage = function(message, messageType) {
+        message = message.replace(/^"|"$/g, ''); // 去除首尾的双引号
+        message = message.replace(/\\n\\n/g, '\n'); // 将字面上的换行符替换为真正的换行符
+    
         // 创建新的消息元素
         const messageElement = document.createElement('div');
-        messageElement.textContent = message;
         messageElement.classList.add(messageType); // Add a class for user messages
-
+    
+        // 将消息分割为行，并为每一行创建一个文本节点和一个换行符
+        const lines = message.split('\n');
+        for (const line of lines) {
+            const textNode = document.createTextNode(line);
+            messageElement.appendChild(textNode);
+            messageElement.appendChild(document.createElement('br'));
+        }
+    
         // 将新消息添加到历史消息区域
         messageHistory.appendChild(messageElement);
-
+    
         // 滚动到最新的消息
         messageHistory.scrollTop = messageHistory.scrollHeight;
-
+    
         conversationHistory.push({role: messageType === 'user-message' ? 'user' : 'assistant', content: message});
         // console.log("对话历史:", JSON.stringify(conversationHistory));
-    }
+    };
+    
+    
 
     // 总结
     window.Asc.plugin.attachContextMenuClickEvent('summarize', function() {
@@ -197,13 +208,8 @@
                 // 隐藏等待指示器
                 typingIndicator.style.display = 'none';
 
-                // Replace newlines with <br> for HTML
-                let formattedResponse = aiResponse.replace(/\\n/g, '<br>');
-                // Remove the quotes around the string
-                formattedResponse = formattedResponse.replace(/^"|"$/g, '');
-
                 // 创建新的AI消息元素
-                displayMessage(formattedResponse, 'ai-message');
+                displayMessage(aiResponse, 'ai-message');
             }
         }
     
