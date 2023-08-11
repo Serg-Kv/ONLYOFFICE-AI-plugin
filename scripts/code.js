@@ -5,7 +5,9 @@
     let hasKey = false;
     const model = 'standard';
     const maxLen = 4000;
-
+    let messageHistory = null;
+    let conversationHistory = null;
+    
     function checkApiKey() {
         ApiKey = localStorage.getItem('apikey');
         if (ApiKey) {
@@ -14,11 +16,12 @@
             hasKey = false;
         }
     };
-
+    
     
     window.Asc.plugin.init = function(){
         // 插件初始化
         messageHistory = document.querySelector('.message-history');
+        conversationHistory = [];
      };
     
 	window.Asc.plugin.button = function()
@@ -75,17 +78,20 @@
     });
 
     // 在对话框中显示消息
-    const displayMessage = function(message, messgaeType) {
+    const displayMessage = function(message, messageType) {
         // 创建新的消息元素
         const messageElement = document.createElement('div');
         messageElement.textContent = message;
-        messageElement.classList.add(messgaeType); // Add a class for user messages
+        messageElement.classList.add(messageType); // Add a class for user messages
 
         // 将新消息添加到历史消息区域
         messageHistory.appendChild(messageElement);
 
         // 滚动到最新的消息
         messageHistory.scrollTop = messageHistory.scrollHeight;
+
+        conversationHistory.push({role: messageType === 'user-message' ? 'user' : 'assistant', content: message});
+        // console.log("对话历史:", JSON.stringify(conversationHistory));
     }
 
     // 总结
@@ -150,7 +156,7 @@
     // add a new function for generating AI responses
     window.Asc.plugin.generateResponse = async function(message) {
         let prompt = {
-            "prompt": [{"role": "user", "content": message}]
+            "prompt": conversationHistory
         }
         let res = await window.Asc.sendRequest(prompt);
         console.log("获得回复：", res)
