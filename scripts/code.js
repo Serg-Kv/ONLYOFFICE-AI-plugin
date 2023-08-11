@@ -97,10 +97,9 @@
     // 总结
     window.Asc.plugin.attachContextMenuClickEvent('summarize', function() {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function(text) {
-            // console.log("总结选中的文本：", text);
-            let response = window.Asc.plugin.generateResponse("简要总结下列内容：\n" + text);
+            conversationHistory.push({role: 'user', content: '总结下面的文本' + text});
+            let response = generateResponse();
             response.then(function(res) {
-                // console.log("总结选中文本-响应: ", res);
                 displayMessage(res, 'ai-message');
             });
         });
@@ -108,7 +107,8 @@
 
     const translateHelper = function(text, targetLanguage) {
         console.log(`翻译为${targetLanguage}选中的文本：`, text);
-        let response = window.Asc.plugin.generateResponse(`翻译为${targetLanguage}：\n` + text);
+        conversationHistory.push({role: 'user', content: `将下面的文本翻译为${targetLanguage}：` + text});
+        let response = generateResponse();
         response.then(function(res) {
             // console.log(`翻译为${targetLanguage}-响应: `, res);
             displayMessage(res, 'ai-message');
@@ -132,8 +132,8 @@
     // 生成
     window.Asc.plugin.attachContextMenuClickEvent('generate', function() {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function(text) {
-            console.log("生成选中的文本：", text);
-            let response = window.Asc.plugin.generateResponse(text);
+            conversationHistory.push({role: 'user', content: '请根据指令生成对应文本：' + text});
+            let response = generateResponse();
             response.then(function(res) {
                 console.log("获得回复：", res);
                 Asc.scope.paragraphs = res.slice(1, -1).split('\\n\\n'); // export variable to plugin scope
@@ -154,7 +154,7 @@
 
 
     // add a new function for generating AI responses
-    window.Asc.plugin.generateResponse = async function(message) {
+    let generateResponse = async function() {
         let prompt = {
             "prompt": conversationHistory
         }
@@ -184,7 +184,7 @@
                 typingIndicator.style.display = 'block';
 
                 //生成AI回复
-                const aiResponse = await Asc.plugin.generateResponse(message);
+                const aiResponse = await generateResponse(message);
 
                 // 隐藏等待指示器
                 typingIndicator.style.display = 'none';
