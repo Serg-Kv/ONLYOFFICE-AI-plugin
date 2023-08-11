@@ -62,6 +62,10 @@
                                     text: '翻译为中文',
                                 }
                             ]
+                        },
+                        {
+                            id: 'clear_history',
+                            text: '清空对话历史',
                         }
                     ]
                 }
@@ -69,14 +73,18 @@
         }
         return settings;
     }
-    
+
     window.Asc.plugin.attachEvent('onContextMenuShow', function(options) {
         if (!options) return;
-    
+        
         if (options.type === 'Selection' || options.type === 'Target')
-            this.executeMethod('AddContextMenuItem', [getContextMenuItems()]);
+        this.executeMethod('AddContextMenuItem', [getContextMenuItems()]);
     });
 
+    window.Asc.plugin.attachContextMenuClickEvent('clear_history', function() {
+        clearHistory();
+    });    
+    
     // 在对话框中显示消息
     const displayMessage = function(message, messageType) {
         // 创建新的消息元素
@@ -209,5 +217,18 @@
             }
         });
     });
+
+    function clearHistory() {
+        // 清空消息历史记录
+        messageHistory.innerHTML = '';
+    
+        // 清空对话历史记录
+        conversationHistory = [];
+        
+        // 清空输入框
+        messageInput.value = '';
+    }
+    
+    
 
 })(window, undefined);
