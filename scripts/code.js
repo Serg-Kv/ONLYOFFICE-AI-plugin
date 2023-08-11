@@ -180,14 +180,15 @@
                 // 清空输入框
                 messageInput.value = '';
 
-                // Show typing indicator
+                // 显示等待指示器
                 typingIndicator.style.display = 'block';
-
-                // Hide typing indicator
-                typingIndicator.style.display = 'none';
 
                 //生成AI回复
                 const aiResponse = await Asc.plugin.generateResponse(message);
+
+                // 隐藏等待指示器
+                typingIndicator.style.display = 'none';
+
                 // Replace newlines with <br> for HTML
                 let formattedResponse = aiResponse.replace(/\\n/g, '<br>');
                 // Remove the quotes around the string

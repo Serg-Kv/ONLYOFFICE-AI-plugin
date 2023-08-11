@@ -120,3 +120,10 @@
 #command-dropdown li:hover {
     background-color: #ddd;
 }
+
+.typing-indicator {
+    display: none; /* 默认隐藏 */
+    margin-top: 10px;
+    color: #888;
+    font-style: italic; /* 斜体文本 */
+}
