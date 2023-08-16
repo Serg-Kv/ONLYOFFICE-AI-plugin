@@ -1,8 +1,11 @@
 async function sendRequest(prompt) {
     const token = window.Asc.JWT;
+    const model = localStorage.getItem('model');
+    const async_url = `https://open.bigmodel.cn/api/paas/v3/model-api/${model}/async-invoke`;
+    console.log("请求url：", async_url)
     return new Promise(async (resolve, reject) => {
         try {
-            const res = await fetch('https://open.bigmodel.cn/api/paas/v3/model-api/chatglm_std/async-invoke', {
+            const res = await fetch(async_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
