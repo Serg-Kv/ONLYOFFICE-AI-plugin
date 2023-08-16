@@ -1,28 +1,58 @@
 {
-    "name"       : "AI Plugin",
-    "guid"       : "asc.{4e079756-cdbc-48ff-bed4-c6f8d947482f}",
-    "baseUrl"    : "",
-    "variations" : [
+    "name": "智谱 AI Copilot",
+    "guid": "asc.{4b5efd7f-7c8d-1ef4-feab-bfbf2e1d86ac}",
+    "baseUrl": "",
+    "version": "1.0",
+    "variations": [
         {
-            "description"         : "AI Plugin",
-            "url"                 : "index.html",
-            "icons"               : ["resources/icon.png", "resources/icon.png"],
-            "isViewer"            : true,
-            "EditorsSupport"      : ["word"],
-            "isVisual"            : true,
-            "isModal"             : true,
-            "isInsideMode"        : true,
-            "initDataType"        : "none",
-            "initData"            : "",
-            "isUpdateOleOnResize" : true,
-            "buttons"             : [],
-            "events": ["onContextMenuShow", "onContextMenuClick"]
+            "description": "基于智谱 AI 大模型的 OnlyOffice 文档插件",
+            "url": "index.html",
+            "icons": [
+                "resources/icon.png",
+                "resources/icon@2x.png"
+            ],
+            "icons2": [
+                {
+                    "100%": {
+                        "normal": "resources/icon.png"
+                    },
+                    "125%": {
+                        "normal": "resources/icon@1.25x.png"
+                    },
+                    "150%": {
+                        "normal": "resources/icon@1.5x.png"
+                    },
+                    "175%": {
+                        "normal": "resources/icon@1.75x.png"
+                    },
+                    "200%": {
+                        "normal": "resources/icon@2x.png"
+                    }
+                }
+            ],
+            "isViewer": true,
+            "EditorsSupport": [
+                "word"
+            ],
+            "isVisual": true,
+            "isModal": true,
+            "isInsideMode": true,
+            "initDataType": "none",
+            "initData": "",
+            "isUpdateOleOnResize": true,
+            "buttons": [],
+            "events": [
+                "onContextMenuShow",
+                "onContextMenuClick"
+            ]
         },
         {
             "description": "设置",
             "url": "index_setting.html",
             "isViewer": false,
-            "EditorsSupport": ["word"],
+            "EditorsSupport": [
+                "word"
+            ],
             "isVisual": true,
             "isModal": true,
             "isInsideMode": false,
@@ -35,8 +65,10 @@
                     "primary": true
                 }
             ],
-
-            "size" : [392, 147]
+            "size": [
+                392,
+                147
+            ]
         }
     ]
 }
