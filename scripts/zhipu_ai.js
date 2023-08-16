@@ -14,7 +14,11 @@ async function sendRequest(prompt) {
                 body: JSON.stringify(prompt),
             });
             const data = await res.json();
-            console.log("发送请求：", data);
+            if(data.code === 200) {
+                console.log("请求成功：", data);
+            }else {
+                console.log("请求失败：", data);
+            }
 
             const task_id = data.data.task_id;
             // searchTask now needs to resolve to the content you want

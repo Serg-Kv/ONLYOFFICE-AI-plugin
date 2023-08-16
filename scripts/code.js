@@ -13,6 +13,7 @@
             hasKey = true;
         } else {
             hasKey = false;
+            displayMessage('请先设置API Key', 'ai-message');
         }
     };
     
@@ -21,6 +22,7 @@
         // 插件初始化
         messageHistory = document.querySelector('.message-history');
         conversationHistory = [];
+        checkApiKey();
      };
     
 	window.Asc.plugin.button = function()
@@ -154,7 +156,7 @@
             let response = generateResponse();
             response.then(function(res) {
                 console.log("获得回复：", res);
-                Asc.scope.paragraphs = res.slice(1, -1).split('\\n'); // export variable to plugin scope
+                Asc.scope.paragraphs = res.slice(1, -1).split('\\n');
                 // console.log("paragraphs: ", Asc.scope.paragraphs);
                 Asc.scope.st = Asc.scope.paragraphs;
                     Asc.plugin.callCommand(function() {
@@ -192,23 +194,12 @@
         async function sendMessage() {
             const message = messageInput.value;
             if (message.trim() !== '') {
-                // 创建新的用户消息元素
-                displayMessage(message, 'user-message');
-
-                // 清空输入框
-                messageInput.value = '';
-
-                // 显示等待指示器
-                typingIndicator.style.display = 'block';
-
-                //生成AI回复
-                const aiResponse = await generateResponse();
-
-                // 隐藏等待指示器
-                typingIndicator.style.display = 'none';
-
-                // 创建新的AI消息元素
-                displayMessage(aiResponse, 'ai-message');
+                displayMessage(message, 'user-message'); // 创建新的用户消息元素
+                messageInput.value = ''; // 清空输入框
+                typingIndicator.style.display = 'block'; // 显示等待指示器
+                const aiResponse = await generateResponse(); //生成AI回复
+                typingIndicator.style.display = 'none'; // 隐藏等待指示器
+                displayMessage(aiResponse, 'ai-message'); // 创建新的AI消息元素
             }
         }
     
