@@ -17,4 +17,4 @@ var sJWT = KJUR.jws.JWS.sign("HS256", sHeader, sPayload, {utf8: secret});
 
 window.Asc.JWT = sJWT;
 
-console.log(sJWT)
+// console.log(sJWT)

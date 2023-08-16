@@ -3,7 +3,6 @@
 {
     let ApiKey = '';
     let hasKey = false;
-    const model = 'standard';
     const maxLen = 4000;
     let messageHistory = null;
     let conversationHistory = null;
@@ -87,7 +86,7 @@
     
     const displayMessage = function(message, messageType) {
         message = message.replace(/^"|"$/g, ''); // 去除首尾的双引号
-        message = message.replace(/\\n\\n/g, '\n'); // 将字面上的换行符替换为真正的换行符
+        message = message.replace(/\\n/g, '\n'); // 将字面上的换行符替换为真正的换行符
     
         // 创建新的消息元素
         const messageElement = document.createElement('div');
@@ -155,8 +154,8 @@
             let response = generateResponse();
             response.then(function(res) {
                 console.log("获得回复：", res);
-                Asc.scope.paragraphs = res.slice(1, -1).split('\\n\\n'); // export variable to plugin scope
-                console.log("paragraphs: ", Asc.scope.paragraphs);
+                Asc.scope.paragraphs = res.slice(1, -1).split('\\n'); // export variable to plugin scope
+                // console.log("paragraphs: ", Asc.scope.paragraphs);
                 Asc.scope.st = Asc.scope.paragraphs;
                     Asc.plugin.callCommand(function() {
                         var oDocument = Api.GetDocument();
@@ -203,7 +202,7 @@
                 typingIndicator.style.display = 'block';
 
                 //生成AI回复
-                const aiResponse = await generateResponse(message);
+                const aiResponse = await generateResponse();
 
                 // 隐藏等待指示器
                 typingIndicator.style.display = 'none';
@@ -216,12 +215,18 @@
         // 绑定发送按钮的点击事件
         sendButton.addEventListener('click', sendMessage);
     
-        // 绑定输入框的回车键按下事件
         messageInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
-                sendMessage();
+                event.preventDefault();  // 取消默认的Enter键事件
+                if (event.shiftKey) {
+                    // 如果用户按下Shift+Enter，插入一个换行符
+                    messageInput.value += '\n';
+                } else {
+                    // 如果用户只按下Enter，发送消息
+                    sendMessage();
+                }
             }
-        });
+        });        
     });
 
     function clearHistory() {
