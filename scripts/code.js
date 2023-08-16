@@ -36,7 +36,7 @@
             items: [
                 {
                     id: 'AiProcess',
-                    text: 'AI处理',
+                    text: '智谱 AI Copilot',
                     items : [
                         {
                             id : 'generate',
