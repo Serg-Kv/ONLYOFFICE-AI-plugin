@@ -1,35 +1,74 @@
 {
-    "name": "智谱 AI Copilot",
+    "name": "智谱 Copilot",
     "guid": "asc.{4b5efd7f-7c8d-1ef4-feab-bfbf2e1d86ac}",
     "baseUrl": "",
-    "version": "1.0",
+    "version": "1.0.0",
     "variations": [
         {
-            "description": "基于智谱 AI 大模型的 OnlyOffice 文档插件",
+            "description": "基于智谱 ChatGLM 大模型的 OnlyOffice 文档 Copilot 插件",
             "url": "index.html",
             "icons": [
-                "resources/icon.png",
-                "resources/icon@2x.png"
+                "resources/light/icon.png",
+                "resources/light/icon@2x.png"
             ],
             "icons2": [
                 {
+                    "style": "light",
                     "100%": {
-                        "normal": "resources/icon.png"
+                        "normal": "resources/light/icon.png"
                     },
                     "125%": {
-                        "normal": "resources/icon@1.25x.png"
+                        "normal": "resources/light/icon@1.25x.png"
                     },
                     "150%": {
-                        "normal": "resources/icon@1.5x.png"
+                        "normal": "resources/light/icon@1.5x.png"
                     },
                     "175%": {
-                        "normal": "resources/icon@1.75x.png"
+                        "normal": "resources/light/icon@1.75x.png"
                     },
                     "200%": {
-                        "normal": "resources/icon@2x.png"
+                        "normal": "resources/light/icon@2x.png"
+                    }
+                },
+                {
+                    "style": "dark",
+                    "100%": {
+                        "normal": "resources/dark/icon.png"
+                    },
+                    "125%": {
+                        "normal": "resources/dark/icon@1.25x.png"
+                    },
+                    "150%": {
+                        "normal": "resources/dark/icon@1.5x.png"
+                    },
+                    "175%": {
+                        "normal": "resources/dark/icon@1.75x.png"
+                    },
+                    "200%": {
+                        "normal": "resources/dark/icon@2x.png"
                     }
                 }
             ],
+            "store": {
+                "background": {
+                    "light": "#7c84e8",
+                    "dark": "#5f55af"
+                },
+                "screenshots": [
+                    "resources/store/screenshots/screen_1.png",
+                    "resources/store/screenshots/screen_2.png",
+                    "resources/store/screenshots/screen_3.png",
+                    "resources/store/screenshots/screen_4.png"
+                ],
+                "icons": {
+                    "light": "resources/store/icons",
+                    "dark": "resources/store/icons"
+                },
+                "categories": [
+                    "specAbilities",
+                    "work"
+                ]
+            },
             "isViewer": true,
             "EditorsSupport": [
                 "word"
