@@ -126,6 +126,17 @@
         });
     });
 
+    // explain 
+    window.Asc.plugin.attachContextMenuClickEvent('explain', function () {
+        window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
+            conversationHistory.push({ role: 'user', content: '解释下面的文本' + text });
+            let response = generateResponse();
+            response.then(function (res) {
+                displayMessage(res, 'ai-message');
+            });
+        });
+    });
+
     const translateHelper = function (text, targetLanguage) {
         console.log(`翻译为${targetLanguage}选中的文本：`, text);
         conversationHistory.push({ role: 'user', content: `将下面的文本翻译为${targetLanguage}：` + text });
