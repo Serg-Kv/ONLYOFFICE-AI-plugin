@@ -2,7 +2,6 @@
 (function (window, undefined) {
     let ApiKey = '';
     let hasKey = false;
-    const maxLen = 4000;
     let messageHistory = null;
     let conversationHistory = null;
     let messageInput = null;
@@ -14,7 +13,7 @@
             hasKey = true;
         } else {
             hasKey = false;
-            displayMessage('请先设置API Key', 'ai-message');
+            displayMessage(generateText('Set Your ZhiPu API Key first'), 'ai-message');
         }
     };
 
@@ -35,38 +34,54 @@
             guid: window.Asc.plugin.guid,
             items: [
                 {
-                    id: 'AiProcess',
-                    text: '智谱 AI Copilot',
+                    id: 'ZhiPu Copilot',
+                    text: generateText('ZhiPu Copilot'),
                     items: [
                         {
                             id: 'generate',
-                            text: '生成',
+                            text: generateText('generate'),
                         },
                         {
                             id: 'summarize',
-                            text: '总结',
+                            text: generateText('summarize'),
                         },
                         {
                             id: 'explain',
-                            text: '解释',
+                            text: generateText('explain'),
                         },
                         {
                             id: 'translate',
-                            text: '翻译',
+                            text: generateText('translate'),
                             items: [
                                 {
                                     id: 'translate_to_en',
-                                    text: '翻译为英文',
+                                    text: generateText('translate to English'),
                                 },
                                 {
                                     id: 'translate_to_zh',
-                                    text: '翻译为中文',
+                                    text: generateText('translate to Chinese'),
+                                },
+                                {
+                                    id: 'translate_to_fr',
+                                    text: generateText('translate to French'),
+                                },
+                                {
+                                    id: 'translate_to_de',
+                                    text: generateText('translate to German'),
+                                },
+                                {
+                                    id: 'translate_to_ru',
+                                    text: generateText('translate to Russian'),
+                                },
+                                {
+                                    id: 'translate_to_es',
+                                    text: generateText('translate to Spanish'),
                                 }
                             ]
                         },
                         {
                             id: 'clear_history',
-                            text: '清空对话历史',
+                            text: generateText('clear chat history'),
                         }
                     ]
                 }
@@ -137,11 +152,10 @@
     });
 
     const translateHelper = function (text, targetLanguage) {
-        console.log(`翻译为${targetLanguage}选中的文本：`, text);
+        console.log(`将下面的文本翻译为${targetLanguage}：`, text);
         conversationHistory.push({ role: 'user', content: `将下面的文本翻译为${targetLanguage}：` + text });
         let response = generateResponse();
         response.then(function (res) {
-            // console.log(`翻译为${targetLanguage}-响应: `, res);
             displayMessage(res, 'ai-message');
         });
     }
@@ -160,13 +174,40 @@
         });
     });
 
-    // generate in doc
+    // translate to French
+    window.Asc.plugin.attachContextMenuClickEvent('translate_to_fr', function () {
+        window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
+            translateHelper(text, "法文");
+        });
+    });
+
+    // translate to German
+    window.Asc.plugin.attachContextMenuClickEvent('translate_to_de', function () {
+        window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
+            translateHelper(text, "德文");
+        });
+    });
+
+    // translate to Russian
+    window.Asc.plugin.attachContextMenuClickEvent('translate_to_ru', function () {
+        window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
+            translateHelper(text, "俄文");
+        });
+    });
+
+    // translate to spanish
+    window.Asc.plugin.attachContextMenuClickEvent('translate_to_es', function () {
+        window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
+            translateHelper(text, "西班牙文");
+        });
+    });
+
+    // generate content directly in document
     window.Asc.plugin.attachContextMenuClickEvent('generate', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             conversationHistory.push({ role: 'user', content: '请根据指令生成对应文本：' + text });
             let response = generateResponse();
             response.then(function (res) {
-                // console.log("获得回复：", res);
                 conversationHistory.push({ role: 'assistant', content: res });
                 Asc.scope.paragraphs = res.slice(1, -1).split('\\n');
                 Asc.scope.st = Asc.scope.paragraphs;
@@ -298,5 +339,14 @@
         conversationHistory.push({ role: 'assistant', content: currentMessage });
     }
 
+
+    function generateText(text) {
+		let lang = window.Asc.plugin.info.lang.substring(0,2);
+        console.log("current lang: ", lang);
+		return {
+			en: text,
+			[lang]: window.Asc.plugin.tr(text)
+		}
+	};
 
 })(window, undefined);
