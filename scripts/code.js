@@ -2,8 +2,8 @@
 (function (window, undefined) {
     let ApiKey = '';
     let hasKey = false;
-    let messageHistory = null;
-    let conversationHistory = null;
+    let messageHistory = null; // a reference to the message history DOM element
+    let conversationHistory = null; // a list of all the messages in the conversation
     let messageInput = null;
     let typingIndicator = null;
 
@@ -123,20 +123,23 @@
         //  scroll to the bottom of the message history
         messageHistory.scrollTop = messageHistory.scrollHeight;
 
-        conversationHistory.push({ role: messageType === 'user-message' ? 'user' : 'assistant', content: message });
-        // console.log("对话历史:", JSON.stringify(conversationHistory));
+        console.log("history: ", conversationHistory);
     };
 
 
 
-    // 总结
+    // summarize
     window.Asc.plugin.attachContextMenuClickEvent('summarize', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             conversationHistory.push({ role: 'user', content: '总结下面的文本' + text });
-            let response = generateResponse();
-            response.then(function (res) {
-                displayMessage(res, 'ai-message');
-            });
+            generateResponse()
+                .then(function (res) {
+                    displayMessage(res, 'ai-message');
+                    conversationHistory.push({ role: 'assistant', content: res });
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         });
     });
 
@@ -144,20 +147,28 @@
     window.Asc.plugin.attachContextMenuClickEvent('explain', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             conversationHistory.push({ role: 'user', content: '解释下面的文本' + text });
-            let response = generateResponse();
-            response.then(function (res) {
-                displayMessage(res, 'ai-message');
-            });
+            generateResponse()
+                .then(function (res) {
+                    displayMessage(res, 'ai-message');
+                    conversationHistory.push({ role: 'assistant', content: res });
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         });
     });
 
     const translateHelper = function (text, targetLanguage) {
         console.log(`将下面的文本翻译为${targetLanguage}：`, text);
         conversationHistory.push({ role: 'user', content: `将下面的文本翻译为${targetLanguage}：` + text });
-        let response = generateResponse();
-        response.then(function (res) {
-            displayMessage(res, 'ai-message');
-        });
+        generateResponse()
+            .then(function (res) {
+                displayMessage(res, 'ai-message');
+                conversationHistory.push({ role: 'assistant', content: res });
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     }
 
     // translate into Chinese
@@ -206,32 +217,42 @@
     window.Asc.plugin.attachContextMenuClickEvent('generate', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             conversationHistory.push({ role: 'user', content: '请根据指令生成对应文本：' + text });
-            let response = generateResponse();
-            response.then(function (res) {
-                conversationHistory.push({ role: 'assistant', content: res });
-                Asc.scope.paragraphs = res.slice(1, -1).split('\\n');
-                Asc.scope.st = Asc.scope.paragraphs;
-                Asc.plugin.callCommand(function () {
-                    var oDocument = Api.GetDocument();
-                    for (var i = 0; i < Asc.scope.st.length; i++) {
-                        var oParagraph = Api.CreateParagraph();
-                        oParagraph.AddText(Asc.scope.st[i]);
-                        oDocument.InsertContent([oParagraph]);
-                    }
-                }, false);
-            });
+            generateResponse()
+                .then(function (res) {
+                    conversationHistory.push({ role: 'assistant', content: res });
+                    Asc.scope.paragraphs = res.slice(1, -1).split('\\n');
+                    Asc.scope.st = Asc.scope.paragraphs;
+                    Asc.plugin.callCommand(function () {
+                        var oDocument = Api.GetDocument();
+                        for (var i = 0; i < Asc.scope.st.length; i++) {
+                            var oParagraph = Api.CreateParagraph();
+                            oParagraph.AddText(Asc.scope.st[i]);
+                            oDocument.InsertContent([oParagraph]);
+                        }
+                    }, false);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         });
 
     });
 
     // generate async request (for in-doc function)
-    let generateResponse = async function () {
-        let prompt = {
-            "prompt": conversationHistory
-        }
-        let res = await window.Asc.sendRequest(prompt);
-        console.log("获得回复：", res)
-        return res;
+    let generateResponse = function () {
+        return new Promise(function (resolve, reject) {
+            let prompt = {
+                "prompt": conversationHistory
+            }
+            window.Asc.sendRequest(prompt)
+                .then(function (res) {
+                    console.log("获得回复：", res);
+                    resolve(res);
+                })
+                .catch(function (error) {
+                    reject(error);
+                });
+        });
     }
 
     // Make sure the DOM is fully loaded before running the following code
@@ -242,17 +263,24 @@
         typingIndicator = document.querySelector('.typing-indicator');
 
         // send a message when the user clicks the send button
-        async function sendMessage() {
+        function sendMessage() {
             const message = messageInput.value;
             if (message.trim() !== '') {
-                displayMessage(message, 'user-message'); // create a new user message element
-                messageInput.value = ''; // clear the message input
+                displayMessage(message, 'user-message');
+                conversationHistory.push({ role: 'user', content: message });
+                messageInput.value = ''; 
                 typingIndicator.style.display = 'block'; // display the typing indicator
-                // const aiResponse = await generateResponse();
-                const reader = await sseRequest(conversationHistory);
+                sseRequest(conversationHistory)
+                    .then(reader => {
+                        console.log("SSE请求成功");
+                        let currentDiv = null;
+                        let currentMessage = null;
+                        displaySSEMessage(reader, currentDiv, currentMessage);
+                    })
+                    .catch(error => {
+                        console.log("SSE请求失败", error);
+                    });
                 typingIndicator.style.display = 'none'; // hide the typing indicator
-                // displayMessage(aiResponse, 'ai-message'); // create a new assistant message element
-                displaySSEMessage(reader);
             }
         }
 
@@ -279,50 +307,93 @@
     }
 
 
-    async function sseRequest(conversationHistory) {
-        console.log("history: ", conversationHistory);
-        const jwt = window.Asc.JWT;
-        console.log("SSE请求开始");
-        const model = localStorage.getItem('model');
-        const url = `https://open.bigmodel.cn/api/paas/v3/model-api/${model}/sse-invoke`;
+    function sseRequest(conversationHistory) {
+        return new Promise((resolve, reject) => {
+            console.log("history: ", conversationHistory);
+            const jwt = window.Asc.JWT;
+            console.log("SSE请求开始");
+            const model = localStorage.getItem('model');
+            const url = `https://open.bigmodel.cn/api/paas/v3/model-api/${model}/sse-invoke`;
 
-        const headers = {
-            'Accept': 'text/event-stream',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + jwt
-        };
+            const headers = {
+                'Accept': 'text/event-stream',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + jwt
+            };
 
-        const requestData = {
-            prompt: conversationHistory
-        };
+            const requestData = {
+                prompt: conversationHistory
+            };
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(requestData)
+            fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requestData)
+            })
+                .then(response => {
+                    const reader = response.body
+                        .pipeThrough(new TextDecoderStream())
+                        .getReader();
+                    resolve(reader);
+                })
+                .catch(err => {
+                    reject(err);
+                });
         });
-
-        return response.body.pipeThrough(new TextDecoderStream()).getReader();
     }
 
     // show SSE result on page
-    async function displaySSEMessage(reader) {
-        let currentDiv = null;
-        let currentMessage = null;
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            if (value.includes('finish' || 'error' || 'interrupt')) {
-                console.log(value);
-                currentDiv = null;
-                break;
+    // todo: 重写这个函数, remove async/await and use promise instead
+    // async function displaySSEMessage(reader) {
+    //     let currentDiv = null;
+    //     let currentMessage = null;
+    //     while (true) {
+    //         const { value, done } = await reader.read();
+    //         if (done) break;
+    //         if (value.includes('finish' || 'error' || 'interrupt')) {
+    //             console.log(value);
+    //             currentDiv = null;
+    //             break;
+    //         }
+    //         if (currentDiv === null) {
+    //             currentDiv = document.createElement('div');
+    //             currentDiv.classList.add('ai-message');
+    //             messageHistory.appendChild(currentDiv);
+    //         };
+    //         const lines = value.split('\n');
+            // lines.forEach(line => {
+            //     if (line.includes('data')) {
+            //         const fragment = line.split(':')[1];
+            //         currentMessage += fragment;
+            //         if (fragment === '') {
+            //             currentDiv.appendChild(document.createElement('br'));
+            //         } else {
+            //             currentDiv.appendChild(document.createTextNode(fragment));
+            //         }
+            //     }
+            // });
+    //     }
+
+    //     conversationHistory.push({ role: 'assistant', content: currentMessage });
+    // }
+
+    function displaySSEMessage(reader, currentDiv, currentMessage) {
+        reader.read().then(function processResult(result) {
+            // console.log("stream result: ", result);
+            if (result.value.includes('event:end') || result.value.includes('event:error') || result.value.includes('event:interrupt') || result.value.includes('event:finish')) {
+                // console.log("result.value of stream", result.value);
+                conversationHistory.push({ role: 'assistant', content: currentMessage });
+                return;
             }
             if (currentDiv === null) {
                 currentDiv = document.createElement('div');
                 currentDiv.classList.add('ai-message');
                 messageHistory.appendChild(currentDiv);
-            };
-            const lines = value.split('\n');
+            }
+            if (currentMessage === null) {
+                currentMessage = '';
+            }
+            const lines = result.value.split('\n');
             lines.forEach(line => {
                 if (line.includes('data')) {
                     const fragment = line.split(':')[1];
@@ -334,19 +405,20 @@
                     }
                 }
             });
-        }
 
-        conversationHistory.push({ role: 'assistant', content: currentMessage });
+            // recursively call processResult() to continue reading data from the stream
+            displaySSEMessage(reader, currentDiv, currentMessage);
+        });
     }
 
 
     function generateText(text) {
-		let lang = window.Asc.plugin.info.lang.substring(0,2);
+        let lang = window.Asc.plugin.info.lang.substring(0, 2);
         console.log("current lang: ", lang);
-		return {
-			en: text,
-			[lang]: window.Asc.plugin.tr(text)
-		}
-	};
+        return {
+            en: text,
+            [lang]: window.Asc.plugin.tr(text)
+        }
+    };
 
 })(window, undefined);
