@@ -20,7 +20,6 @@
 
 
     window.Asc.plugin.init = function () {
-        // 插件初始化
         messageHistory = document.querySelector('.message-history');
         conversationHistory = [];
         typingIndicator = document.querySelector('.typing-indicator');
@@ -88,14 +87,14 @@
     });
 
     const displayMessage = function (message, messageType) {
-        message = message.replace(/^"|"$/g, ''); // 去除首尾的双引号
-        message = message.replace(/\\n/g, '\n'); // 将字面上的换行符替换为真正的换行符
+        message = message.replace(/^"|"$/g, ''); // remove surrounding quotes
+        message = message.replace(/\\n/g, '\n'); // replace \n with newline characters
 
-        // 创建新的消息元素
+        // create a new message element
         const messageElement = document.createElement('div');
         messageElement.classList.add(messageType); // Add a class for user messages
 
-        // 将消息分割为行，并为每一行创建一个文本节点和一个换行符
+        // split the message into lines and create a text node for each line
         const lines = message.split('\n');
         for (const line of lines) {
             const textNode = document.createTextNode(line);
@@ -103,10 +102,10 @@
             messageElement.appendChild(document.createElement('br'));
         }
 
-        // 将新消息添加到历史消息区域
+        // add the message element to the message history
         messageHistory.appendChild(messageElement);
 
-        // 滚动到最新的消息
+        //  scroll to the bottom of the message history
         messageHistory.scrollTop = messageHistory.scrollHeight;
 
         conversationHistory.push({ role: messageType === 'user-message' ? 'user' : 'assistant', content: message });
@@ -147,21 +146,21 @@
         });
     }
 
-    // 翻译为中文
+    // translate into Chinese
     window.Asc.plugin.attachContextMenuClickEvent('translate_to_zh', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             translateHelper(text, "中文");
         });
     });
 
-    // 翻译为英文
+    // translate into English
     window.Asc.plugin.attachContextMenuClickEvent('translate_to_en', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             translateHelper(text, "英文");
         });
     });
 
-    // 生成
+    // generate in doc
     window.Asc.plugin.attachContextMenuClickEvent('generate', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
             conversationHistory.push({ role: 'user', content: '请根据指令生成对应文本：' + text });
@@ -184,8 +183,7 @@
 
     });
 
-
-    // 生成异步请求（用于in-doc功能）
+    // generate async request (for in-doc function)
     let generateResponse = async function () {
         let prompt = {
             "prompt": conversationHistory
@@ -197,37 +195,36 @@
 
     // Make sure the DOM is fully loaded before running the following code
     document.addEventListener("DOMContentLoaded", function () {
-        // 获取相关的DOM元素
+        // get references to the DOM elements
         messageInput = document.querySelector('.message-input');
         const sendButton = document.querySelector('.send-button');
         typingIndicator = document.querySelector('.typing-indicator');
 
-        // 发送消息的处理函数
+        // send a message when the user clicks the send button
         async function sendMessage() {
             const message = messageInput.value;
             if (message.trim() !== '') {
-                displayMessage(message, 'user-message'); // 创建新的用户消息元素
-                messageInput.value = ''; // 清空输入框
-                typingIndicator.style.display = 'block'; // 显示等待指示器
-                // const aiResponse = await generateResponse(); //生成AI回复
+                displayMessage(message, 'user-message'); // create a new user message element
+                messageInput.value = ''; // clear the message input
+                typingIndicator.style.display = 'block'; // display the typing indicator
+                // const aiResponse = await generateResponse();
                 const reader = await sseRequest(conversationHistory);
-                typingIndicator.style.display = 'none'; // 隐藏等待指示器
-                // displayMessage(aiResponse, 'ai-message'); // 创建新的AI消息元素
+                typingIndicator.style.display = 'none'; // hide the typing indicator
+                // displayMessage(aiResponse, 'ai-message'); // create a new assistant message element
                 displaySSEMessage(reader);
             }
         }
 
-        // 绑定发送按钮的点击事件
         sendButton.addEventListener('click', sendMessage);
 
         messageInput.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
-                event.preventDefault();  // 取消默认的Enter键事件
+                event.preventDefault();  // prevent the default behavior of the Enter key
                 if (event.shiftKey) {
-                    // 如果用户按下Shift+Enter，插入一个换行符
+                    // if the user pressed Shift+Enter, insert a newline character
                     messageInput.value += '\n';
                 } else {
-                    // 如果用户只按下Enter，发送消息
+                    // if the user only pressed Enter, send the message
                     sendMessage();
                 }
             }
@@ -235,13 +232,8 @@
     });
 
     function clearHistory() {
-        // 清空消息历史记录
         messageHistory.innerHTML = '';
-
-        // 清空对话历史记录
         conversationHistory = [];
-
-        // 清空输入框
         messageInput.value = '';
     }
 
@@ -249,24 +241,20 @@
     async function sseRequest(conversationHistory) {
         console.log("history: ", conversationHistory);
         const jwt = window.Asc.JWT;
-        // 向服务器发送请求
         console.log("SSE请求开始");
         const model = localStorage.getItem('model');
         const url = `https://open.bigmodel.cn/api/paas/v3/model-api/${model}/sse-invoke`;
 
-        // 请求头
         const headers = {
             'Accept': 'text/event-stream',
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + jwt
         };
 
-        // 请求体数据
         const requestData = {
             prompt: conversationHistory
         };
 
-        // 发送POST请求获取响应
         const response = await fetch(url, {
             method: 'POST',
             headers: headers,
@@ -276,7 +264,7 @@
         return response.body.pipeThrough(new TextDecoderStream()).getReader();
     }
 
-    // 将SSE结果显示在页面上
+    // show SSE result on page
     async function displaySSEMessage(reader) {
         let currentDiv = null;
         let currentMessage = null;
