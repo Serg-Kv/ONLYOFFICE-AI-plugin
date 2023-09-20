@@ -342,41 +342,6 @@
         });
     }
 
-    // show SSE result on page
-    // todo: 重写这个函数, remove async/await and use promise instead
-    // async function displaySSEMessage(reader) {
-    //     let currentDiv = null;
-    //     let currentMessage = null;
-    //     while (true) {
-    //         const { value, done } = await reader.read();
-    //         if (done) break;
-    //         if (value.includes('finish' || 'error' || 'interrupt')) {
-    //             console.log(value);
-    //             currentDiv = null;
-    //             break;
-    //         }
-    //         if (currentDiv === null) {
-    //             currentDiv = document.createElement('div');
-    //             currentDiv.classList.add('ai-message');
-    //             messageHistory.appendChild(currentDiv);
-    //         };
-    //         const lines = value.split('\n');
-            // lines.forEach(line => {
-            //     if (line.includes('data')) {
-            //         const fragment = line.split(':')[1];
-            //         currentMessage += fragment;
-            //         if (fragment === '') {
-            //             currentDiv.appendChild(document.createElement('br'));
-            //         } else {
-            //             currentDiv.appendChild(document.createTextNode(fragment));
-            //         }
-            //     }
-            // });
-    //     }
-
-    //     conversationHistory.push({ role: 'assistant', content: currentMessage });
-    // }
-
     function displaySSEMessage(reader, currentDiv, currentMessage) {
         reader.read().then(function processResult(result) {
             // console.log("stream result: ", result);
