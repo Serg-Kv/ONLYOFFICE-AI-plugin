@@ -1,11 +1,48 @@
 // an Chat plugin of AI
 (function (window, undefined) {
+
+    // define prompts for multiple languages
+    const prompts = {
+        en: {
+            'summarize': 'summarize the text in up to 10 concise bullet points in English',
+            'explain': 'explain the key concepts by bullet points and then summarize in simple words',
+            'generate': 'using English to ',
+        },
+        de: {
+            'summarize': 'fassen Sie den Text in bis zu 10 prägnanten Stichpunkten auf Deutsch zusammen',
+            'explain': 'erklären Sie die Schlüsselkonzepte in Stichpunkten und fassen Sie sie dann in einfachen Worten zusammen',
+            'generate': 'Deutschland nutzen, um ',
+        },
+        es: {
+            'summary': 'resuma el texto en hasta 10 puntos concisos en español',
+            'explain': 'explique los conceptos clave en puntos y luego resuma en palabras sencillas',
+            'generate': 'usando español para ',
+        },
+        ru: {
+            'summarize': 'суммируйте текст вплоть до 10 кратких пунктов на русском языке',
+            'explain': 'объясните ключевые концепции пунктами, а затем суммируйте простыми словами',
+            'generate': 'используя русский язык для ',
+        },
+        fr: {
+            'summarize': 'résumer le texte en 10 points concis en français',
+            'explain': 'expliquer les concepts clés par des points, puis résumer en termes simples',
+            'generate': 'utiliser le français pour ',
+        },
+        zh: {
+            'summarize': '用10个简洁的要点总结文本',
+            'explain': '用要点解释关键概念，然后用简单的话总结',
+            'generate': '用中文来',
+        }
+    }
+
+
     let ApiKey = '';
     let hasKey = false;
     let messageHistory = null; // a reference to the message history DOM element
     let conversationHistory = null; // a list of all the messages in the conversation
     let messageInput = null;
     let typingIndicator = null;
+    let lang = '';
 
     function checkApiKey() {
         ApiKey = localStorage.getItem('apikey');
@@ -20,6 +57,9 @@
 
 
     window.Asc.plugin.init = function () {
+        lang = window.Asc.plugin.info.lang.substring(0, 2);
+        console.log("current lang: ", lang)
+        console.log("test translate: " + prompts[lang]['summarize']);
         messageHistory = document.querySelector('.message-history');
         conversationHistory = [];
         typingIndicator = document.querySelector('.typing-indicator');
@@ -128,11 +168,10 @@
     };
 
 
-
     // summarize
     window.Asc.plugin.attachContextMenuClickEvent('summarize', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
-            conversationHistory.push({ role: 'user', content: '总结下面的文本' + text });
+            conversationHistory.push({ role: 'user', content: prompts[lang]['summarize'] + text });
             generateResponse()
                 .then(function (res) {
                     displayMessage(res, 'ai-message');
@@ -147,7 +186,7 @@
     // explain 
     window.Asc.plugin.attachContextMenuClickEvent('explain', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
-            conversationHistory.push({ role: 'user', content: '解释下面的文本' + text });
+            conversationHistory.push({ role: 'user', content: prompts[lang]['explain'] + text });
             generateResponse()
                 .then(function (res) {
                     displayMessage(res, 'ai-message');
@@ -160,8 +199,7 @@
     });
 
     const translateHelper = function (text, targetLanguage) {
-        console.log(`将下面的文本翻译为${targetLanguage}：`, text);
-        conversationHistory.push({ role: 'user', content: `将下面的文本翻译为${targetLanguage}：` + text });
+        conversationHistory.push({ role: 'user', content: `翻译为${targetLanguage}: ` + text });
         generateResponse()
             .then(function (res) {
                 displayMessage(res, 'ai-message');
@@ -217,7 +255,7 @@
     // generate content directly in document
     window.Asc.plugin.attachContextMenuClickEvent('generate', function () {
         window.Asc.plugin.executeMethod('GetSelectedText', null, function (text) {
-            conversationHistory.push({ role: 'user', content: '请根据指令生成对应文本：' + text });
+            conversationHistory.push({ role: 'user', content: prompts[lang]['generate'] + text });
             generateResponse()
                 .then(function (res) {
                     conversationHistory.push({ role: 'assistant', content: res });
@@ -385,7 +423,6 @@
 
     function generateText(text) {
         let lang = window.Asc.plugin.info.lang.substring(0, 2);
-        console.log("current lang: ", lang);
         return {
             en: text,
             [lang]: window.Asc.plugin.tr(text)
